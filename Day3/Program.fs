@@ -37,10 +37,28 @@ let findClosest(points1 : Point list, points2 : Point list) =
                             |> List.ofSeq
     orderedDistance.Head
 
+let findIndexTotal(points1 : Point list, points2 : Point list, pointToFind: Point) =
+    let points1Reverse = List.rev points1
+    let points2Reverse = List.rev points2
+    List.findIndex (fun (x2, y2) -> pointToFind = (x2, y2)) points1Reverse 
+        + List.findIndex (fun (x2, y2) -> pointToFind = (x2, y2)) points2Reverse
+
+let findClosestPartTwo(points1 : Point list, points2 : Point list) =
+    let points1Set = Set.ofList points1
+    let points2Set = Set.ofList points2
+    let orderedDistance = Set.intersect points1Set points2Set
+                            |> Set.filter(fun (x, y) -> x <> 0 && y <> 0)
+                            |> Set.map(fun (x, y) -> findIndexTotal(points1, points2, (x,y)))
+                            |> Seq.sort
+                            |> List.ofSeq
+    orderedDistance.Head
+
 [<EntryPoint>]
 let main argv =
     let wirePoints = getWirePoints() |> Async.RunSynchronously
     let plottedWires = wirePoints |> Seq.map plotWire
     let closestIntersection = findClosest (Seq.item(0) plottedWires, Seq.item(1) plottedWires)
+    let closestIntersectionPartTwo = findClosestPartTwo (Seq.item(0) plottedWires, Seq.item(1) plottedWires)
     printfn "%i" closestIntersection
+    printfn "%i" closestIntersectionPartTwo
     0 // return an integer exit code
